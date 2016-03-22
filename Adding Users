@@ -12,6 +12,7 @@ $_SESSION['form_token'] = $form_token;
 
 <html>
 <head>
+<link rel="stylesheet" type="text/css" href="mystyle.css">
 <title>PHPRO Login</title>
 </head>
 
