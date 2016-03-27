@@ -1,70 +1,81 @@
 <?php
-//Start session
 session_start();
- 
-//Include database connection details
-require_once('db.php');
- 
-//Array to store validation errors
-$errmsg_arr = array();
- 
-//Validation error flag
-$errflag = false;
- 
-//Function to sanitize values received from the form. Prevents SQL injection
-function clean($str) {
-$str = @trim($str);
-if(get_magic_quotes_gpc()) {
-$str = stripslashes($str);
-}
-return mysql_real_escape_string($str);
-}
-
-//Sanitize the POST values
-$regusername = clean($_POST['regusername']);
-$regpassword = clean($_POST['regpassword']);
-$adminpass = clean($_POST['adminpass']);
-//Input Validations
-if($regusername == '') {
-$errmsg_arr[] = 'Username missing';
-$errflag = true;
-}
-if($regpassword == '') {
-$errmsg_arr[] = 'Password missing';
-$errflag = true;
-}
- 
-//If there are input validations, redirect back to the login form
-if($errflag) {
-$_SESSION['ERRMSG_ARR'] = $errmsg_arr;
-session_write_close();
-header("location: index.php");
-exit();
-}
-$result = mysql_query("SELECT * FROM user where password='".md5($_POST['adminpass'])."'");
-$count=mysql_num_rows($result);
-
-if($count!=0)
+if(isset($_SESSION['user'])!="")
 {
-mysql_query("INSERT INTO user (username, password)
-VALUES ('$regusername', '".md5($_POST['regpassword'])."')");
-$errmsg_arr[] = 'Registration Success You can now login';
-$errflag = true;
-if($errflag) {
-$_SESSION['ERRMSG_ARR'] = $errmsg_arr;
-session_write_close();
-header("location: index.php");
-exit();
+	header("Location: home.php");
 }
+include_once 'dbconnect.php';
+
+if(isset($_POST['btn-signup']))
+{
+	$uname = mysql_real_escape_string($_POST['uname']);
+	$email = mysql_real_escape_string($_POST['email']);
+	$upass = md5(mysql_real_escape_string($_POST['pass']));
+	
+	$uname = trim($uname);
+	$email = trim($email);
+	$upass = trim($upass);
+	
+	// email exist or not
+	$query = "SELECT user_email FROM users WHERE user_email='$email'";
+	$result = mysql_query($query);
+	
+	$count = mysql_num_rows($result); // if email not found then register
+	
+	if($count == 0){
+		
+		if(mysql_query("INSERT INTO users(user_name,user_email,user_pass) VALUES('$uname','$email','$upass')"))
+		{
+			?>
+			<script>alert('successfully registered ');</script>
+			<?php
+		}
+		else
+		{
+			?>
+			<script>alert('error while registering you...');</script>
+			<?php
+		}		
+	}
+	else{
+			?>
+			<script>alert('Sorry Email ID already taken ...');</script>
+			<?php
+	}
+	
 }
-else{
-$errmsg_arr[] = 'You dont have access to add user pls. contact the administrator';
-$errflag = true;
-if($errflag) {
-$_SESSION['ERRMSG_ARR'] = $errmsg_arr;
-session_write_close();
-header("location: index.php");
-exit();
-}
-}
-?> 
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Coding Cage - Login & Registration System</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+
+</head>
+<body>
+<center>
+<div id="login-form">
+<form method="post">
+<table align="center" width="30%" border="0">
+<tr>
+<td><input type="text" name="uname" placeholder="User Name" required /></td>
+</tr>
+<tr>
+<td><input type="email" name="email" placeholder="Your Email" required /></td>
+</tr>
+<tr>
+<td><input type="password" name="pass" placeholder="Your Password" required /></td>
+</tr>
+<tr>
+<td><button type="submit" name="btn-signup">Sign Me Up</button></td>
+</tr>
+<tr>
+<td><a href="index.php">Sign In Here</a></td>
+</tr>
+</table>
+</form>
+</div>
+</center>
+</body>
+</html>
