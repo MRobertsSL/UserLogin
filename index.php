@@ -1,103 +1,66 @@
 <?php
-	//Start session
-	session_start();
-	error_reporting(0);
-	//Unset the variables stored in session
-	unset($_SESSION['SESS_MEMBER_ID']);
-	unset($_SESSION['SESS_FIRST_NAME']);
-	unset($_SESSION['SESS_LAST_NAME']);
-?>
-<!DOCTYPE html>
+session_start();
+include_once 'dbconnect.php';
 
-<html>
-
-    <head>
-
-        <meta charset="utf-8" />
-
-        <title>Inventory</title>
-
-        
-
-        <!-- Our CSS stylesheet file -->
-
-        <link rel="stylesheet" href="styles.css" />
-
-        
-
-        <!--[if lt IE 9]>
-
-          <script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-
-        <![endif]-->
-
-    </head>
-
-    
-
-<body>
-<div style="margin:0 auto; width:300px; padding-left: 32px; margin-top:50px;">
-	<?php
-if( isset($_SESSION['ERRMSG_ARR']) && is_array($_SESSION['ERRMSG_ARR']) && count($_SESSION['ERRMSG_ARR']) >0 ) {
-echo '<ul class="err">';
-foreach($_SESSION['ERRMSG_ARR'] as $msg) {
-echo '<li>',$msg,'</li>';
-}
-echo '</ul>';
-unset($_SESSION['ERRMSG_ARR']);
-}
-$remark=$_GET['id'];
-if($remark=='success')
+if(isset($_SESSION['user'])!="")
 {
-echo '<ul>';
-echo '<li>'." Registration Success You can now login ".'</li>';
-echo '</ul>';
+	header("Location: ../home");
+}
+
+if(isset($_POST['btn-login']))
+{
+	$email = mysql_real_escape_string($_POST['email']);
+	$upass = mysql_real_escape_string($_POST['pass']);
+	
+	$email = trim($email);
+	$upass = trim($upass);
+	
+	$res=mysql_query("SELECT user_id, user_name, user_pass FROM users WHERE user_email='$email'");
+	$row=mysql_fetch_array($res);
+	
+	$count = mysql_num_rows($res); // if uname/pass correct it returns must be 1 row
+	
+	if($count == 1 && $row['user_pass']==md5($upass))
+	{
+		$_SESSION['user'] = $row['user_id'];
+		header("Location: ../home");
+	}
+	else
+	{
+		?>
+        <script>alert('Username / Password Seems Wrong !');</script>
+        <?php
+	}
+	
 }
 ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Coding Cage - Login & Registration System</title>
+<link rel="stylesheet" href="style.css" type="text/css" />
+</head>
+<body>
+<center>
+<div id="login-form">
+<form method="post">
+<table align="center" width="30%" border="0">
+<tr>
+<td><input type="text" name="email" placeholder="Your Email" required /></td>
+</tr>
+<tr>
+<td><input type="password" name="pass" placeholder="Your Password" required /></td>
+</tr>
+<tr>
+<td><button type="submit" name="btn-login">Sign In</button></td>
+</tr>
+<tr>
+<td><a href="register.php">Sign Up Here</a></td>
+</tr>
+</table>
+</form>
 </div>
-
-
-		<div id="formContainer">
-
-			<form action="login.php" method="post" name="login" id="login">
-
-				<a href="#" id="flipToRecover" class="flipLink">Forgot?</a>
-
-				<input type="text" name="username" id="loginEmail" placeholder="Username" />
-
-				<input type="password" name="password" id="loginPass" placeholder="Password" />
-
-				<input type="submit" name="submit" value="Login" />
-
-			</form>
-
-			<form id="recover" method="post" action="register.php">
-
-				<a href="#" id="flipToLogin" class="flipLink">Forgot?</a>
-				<input type="text" name="adminpass" id="loginEmail" placeholder="Admin Password" style="top: 138px;" />
-				<input type="text" name="regusername" id="loginEmail" placeholder="Username" />
-				<input type="password" name="regpassword" id="recoverEmail" placeholder="Password" />
-
-				<input type="submit" name="submit" value="Save" />
-
-			</form>
-
-		</div>
-
-
-
-    <!-- JavaScript includes -->
-
-	<script src="jquery-1.7.1.min.js"></script>
-
-		<script src="script.js"></script>
-
-
-    
-
+</center>
 </body>
-
 </html>
-
-
-
